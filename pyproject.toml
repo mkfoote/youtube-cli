@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "youtube-cli"
+version = "0.1.0"
+description = "A simple terminal-only YouTube music client using yt-dlp."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "yt-dlp>=2025.1.15",
+]
+
+[project.scripts]
+youtube-cli = "youtube_cli.app:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
