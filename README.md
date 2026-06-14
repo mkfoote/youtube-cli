@@ -29,22 +29,22 @@ youtube-cli
 Or pass the first song directly:
 
 ```sh
-youtube-cli "massive attack teardrop"
+youtube-cli "dreams van halen"
 ```
 
 Useful options:
 
 ```sh
-youtube-cli --player mpv "radiohead reckoner"
-youtube-cli --max-songs 25 "erykah badu on and on"
-youtube-cli --verbose "daft punk something about us"
+youtube-cli --player mpv  # use specific player
+youtube-cli --max-songs 25  # stop playing after the number of songs is reached
+youtube-cli --verbose 
 ```
 
-For genre-aware queue recommendations, set a Last.fm API key:
+To get better recommendations in the queue, set up a Last.fm API key: (they're completely free and can be picked up [here](https://www.last.fm/api))
 
 ```sh
 export LASTFM_API_KEY="..."
-youtube-cli "radiohead reckoner"
+youtube-cli "damn yankees high enough"
 ```
 
 With `LASTFM_API_KEY` set, the queue asks Last.fm for similar tracks and top
@@ -65,9 +65,7 @@ because MusicBrainz is rate-limited and can slow background queue fills.
 Playback starts as soon as the first song is resolved. The mix queue is filled
 in the background while the current song is playing. By default playback
 continues indefinitely until you stop it.
-When using `ffplay`, media is streamed through `yt-dlp` instead of handing
-`ffplay` a temporary YouTube media URL directly, which makes playback less
-likely to stop early on transient stream issues.
+When using `ffplay`, media is streamed through `yt-dlp`, which results in much more robust playback.
 
 The default interactive view is a terminal UI with the upcoming queue and a
 bottom now-playing progress bar. If stdout or stdin is not attached to a
@@ -80,13 +78,12 @@ is full.
 
 While a song is playing:
 
-- Let it finish to continue the mix.
 - Press `/` to search for another song.
-- Type a search term and press `enter` to show results.
-- Use up/down arrows in search results and press `enter` to add the highlighted result to the queue.
-- Press `esc` to close search and return to queue control.
+  - Type a search term and press `enter` to show results.
+  - Use up/down arrows in search results and press `enter` to add the highlighted result to the queue.
+  - Press `esc` to close search and return to queue control.
 - Press the up/down arrows to select an item in the queue.
-- Press `enter` to jump immediately to the selected queue item.
+- Press `enter` to immediately play the selected queue item.
 - Press `delete` or `backspace` to remove the selected queue item.
 - Press `space` to pause or resume playback.
 - Press `s` to skip the current song.

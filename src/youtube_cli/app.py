@@ -5,6 +5,7 @@ import curses
 import signal
 import subprocess
 import time
+import sys
 
 from .models import MixCandidate, PlaybackResult, RecommendedSong, Track
 from .playback import pause_process, resume_process, stop_process
