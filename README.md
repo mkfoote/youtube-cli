@@ -62,6 +62,8 @@ MusicBrainz enrichment reorders the front of the Last.fm candidate list toward
 recordings with nearby release years and overlapping tags. It is off by default
 because MusicBrainz is rate-limited and can slow background queue fills.
 
+# Usage
+
 Playback starts as soon as the first song is resolved. The mix queue is filled
 in the background while the current song is playing. By default playback
 continues indefinitely until you stop it.
@@ -76,11 +78,20 @@ metadata for duplicate detection. Recommended songs are resolved through
 YouTube and added unless they are already known duplicates or the queue buffer
 is full.
 
-While a song is playing:
+# Search
+Search uses a focused full-screen results view and hides the queue while it is open.
+Search rows show `...` while resolving, `+` after adding, `=` for duplicates, and `!` on failure.
+If the queue is full, manual adds replace the last queued item.
+
+
+# While a song is playing:
 
 - Press `/` to search for another song.
   - Type a search term and press `enter` to show results.
-  - Use up/down arrows in search results and press `enter` to add the highlighted result to the queue.
+  - Use up/down arrows in search results.
+  - Press `enter` or `a` to add the highlighted result to the end of the queue.
+  - Press `n` to add the highlighted result as the next song.
+  - Press `j` to resolve and play the highlighted result immediately.
   - Press `esc` to close search and return to queue control.
 - Press the up/down arrows to select an item in the queue.
 - Press `enter` to immediately play the selected queue item.

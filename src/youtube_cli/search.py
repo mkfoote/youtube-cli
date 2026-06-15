@@ -4,7 +4,7 @@ import curses
 import threading
 from typing import Any
 
-from .models import SearchResult
+from .models import SearchResult, Track
 from .prefetch import MixPrefetcher
 from .youtube import YoutubeMixClient
 
@@ -20,6 +20,8 @@ class SearchController:
         self.status = ""
         self.searching = False
         self.adding = False
+        self.result_states: dict[str, str] = {}
+        self.jump_ready: Track | None = None
         self.lock = threading.Lock()
 
     def open(self) -> str:
@@ -55,6 +57,7 @@ class SearchController:
                 "status": self.status,
                 "searching": self.searching,
                 "adding": self.adding,
+                "result_states": dict(self.result_states),
             }
 
     def _handle_input_key(self, key: int) -> str | None:
@@ -89,8 +92,12 @@ class SearchController:
                 if self.results:
                     self.selected_index = min(len(self.results) - 1, self.selected_index + 1)
             return None
-        if key in (curses.KEY_ENTER, 10, 13):
-            return self._start_add_selected()
+        if key in (curses.KEY_ENTER, 10, 13, ord("a"), ord("A")):
+            return self._start_add_selected(play_next=False, jump_now=False)
+        if key in (ord("n"), ord("N")):
+            return self._start_add_selected(play_next=True, jump_now=False)
+        if key in (ord("j"), ord("J")):
+            return self._start_add_selected(play_next=False, jump_now=True)
         return None
 
     def _start_search(self, query: str) -> None:
@@ -122,10 +129,11 @@ class SearchController:
         with self.lock:
             self.results = results
             self.selected_index = 0
+            self.result_states = {}
             self.status = status
             self.searching = False
 
-    def _start_add_selected(self) -> str | None:
+    def _start_add_selected(self, *, play_next: bool, jump_now: bool) -> str | None:
         with self.lock:
             if self.adding:
                 return "already adding"
@@ -133,28 +141,59 @@ class SearchController:
                 return "no search results"
             selected = self.results[self.selected_index]
             self.adding = True
-            self.status = f"adding {selected.label}"
+            self.result_states[selected.webpage_url] = "resolving"
+            action = "playing now" if jump_now else "adding next" if play_next else "adding"
+            self.status = f"{action} {selected.label}"
+
+        if not jump_now:
+            added_pending = self.prefetcher.playlist.add_pending(
+                title=selected.title,
+                artist=selected.artist,
+                webpage_url=selected.webpage_url,
+                stop_event=self.prefetcher.stop_event,
+                play_next=play_next,
+                wait_for_space=False,
+            )
+            if not added_pending:
+                with self.lock:
+                    self.adding = False
+                    self.result_states[selected.webpage_url] = "duplicate"
+                    self.status = f"not added {selected.label}"
+                return f"not added {selected.label}"
 
         thread = threading.Thread(
             target=self._add_worker,
-            args=(selected,),
+            args=(selected, jump_now),
             name="manual-add",
             daemon=True,
         )
         thread.start()
-        return f"adding {selected.label}"
+        return self.status
 
-    def _add_worker(self, selected: SearchResult) -> None:
+    def _add_worker(self, selected: SearchResult, jump_now: bool) -> None:
         try:
             track = self.client.resolve(selected.webpage_url)
-            added = self.prefetcher.playlist.add(
-                track,
-                stop_event=self.prefetcher.stop_event,
-            )
-            status = f"added {track.label}" if added else f"not added {track.label}"
+            if jump_now:
+                with self.lock:
+                    self.jump_ready = track
+                added = True
+            else:
+                added = self.prefetcher.playlist.resolve_pending(selected.webpage_url, track)
+            state = "added" if added else "failed"
+            status = f"ready {track.label}" if jump_now else f"added {track.label}" if added else f"not added {track.label}"
         except Exception as exc:
+            state = "failed"
             status = f"add failed: {exc}"
+            if not jump_now:
+                self.prefetcher.playlist.fail_pending(selected.webpage_url, selected.label)
 
         with self.lock:
             self.adding = False
+            self.result_states[selected.webpage_url] = state
             self.status = status
+
+    def consume_jump(self) -> Track | None:
+        with self.lock:
+            track = self.jump_ready
+            self.jump_ready = None
+            return track

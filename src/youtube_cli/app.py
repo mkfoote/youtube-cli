@@ -151,6 +151,11 @@ def play_with_ui(
 
     try:
         while process.poll() is None:
+            jump_track = search.consume_jump()
+            if jump_track:
+                stop_process(process)
+                return PlaybackResult("jumped", jump_track)
+
             now = time.monotonic()
             elapsed = pause_started_at - started_at - paused_seconds if paused else now - started_at - paused_seconds
             ui.draw(
@@ -213,6 +218,10 @@ def wait_for_next_track(
     started_waiting = time.monotonic()
     local_status = status
     while True:
+        jump_track = search.consume_jump()
+        if jump_track:
+            return jump_track
+
         track = prefetcher.next_track_nowait()
         if track:
             return track

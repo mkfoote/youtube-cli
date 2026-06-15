@@ -55,7 +55,7 @@ class YoutubeMixClient:
         return self._track_from_info(entries[0])
 
     def search(self, query: str, *, limit: int = 10) -> list[SearchResult]:
-        info = self._extract(f"ytsearch{limit}:{query}")
+        info = self._extract_flat(f"ytsearch{limit}:{query}")
         results: list[SearchResult] = []
         for entry in info.get("entries") or []:
             result = self._search_result_from_info(entry)
@@ -164,6 +164,15 @@ class YoutubeMixClient:
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
             return ydl.extract_info(url_or_query, download=False)
 
+    def _extract_flat(self, url_or_query: str) -> dict[str, Any]:
+        opts = {
+            **self.ydl_opts,
+            "extract_flat": True,
+            "skip_download": True,
+        }
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            return ydl.extract_info(url_or_query, download=False)
+
     def _track_from_info(self, info: dict[str, Any]) -> Track:
         webpage_url = info.get("webpage_url") or self._watch_url(info)
         stream_url = info.get("url")
@@ -194,7 +203,11 @@ class YoutubeMixClient:
         )
 
     def _search_result_from_info(self, info: dict[str, Any]) -> SearchResult | None:
-        webpage_url = info.get("webpage_url") or self._watch_url(info)
+        webpage_url = (
+            info.get("webpage_url")
+            or self._normalize_video_url(info.get("url", ""))
+            or self._watch_url(info)
+        )
         if not webpage_url:
             return None
 
@@ -204,11 +217,11 @@ class YoutubeMixClient:
             inferred_artist, inferred_title = infer_artist_from_title(title)
             artist = inferred_artist
             title = inferred_title
-        duration = info.get("duration")
+        duration = parse_duration(info.get("duration"))
         return SearchResult(
             title=title,
             artist=artist,
-            duration=duration if isinstance(duration, int) else None,
+            duration=duration,
             webpage_url=webpage_url,
         )
 
@@ -311,3 +324,13 @@ class YoutubeMixClient:
 
     def _player_name(self) -> str:
         return self.player_cmd[0].rsplit("/", 1)[-1]
+
+
+def parse_duration(value: Any) -> int | None:
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    return None
