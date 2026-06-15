@@ -117,14 +117,14 @@ class YoutubeMixClient:
                 subprocess.Popen(
                     self._player_command(track.webpage_url),
                     stdout=subprocess.DEVNULL,
-                    stderr=None if self.verbose else subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
                 )
             )
         return PlayerProcess(
             subprocess.Popen(
                 self._player_command(track.url),
                 stdout=subprocess.DEVNULL,
-                stderr=None if self.verbose else subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
             )
         )
 
@@ -148,13 +148,13 @@ class YoutubeMixClient:
                 track.webpage_url,
             ],
             stdout=subprocess.PIPE,
-            stderr=None if self.verbose else subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
         player = subprocess.Popen(
             self._ffplay_pipe_command(),
             stdin=downloader.stdout,
             stdout=subprocess.DEVNULL,
-            stderr=None if self.verbose else subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
         if downloader.stdout:
             downloader.stdout.close()

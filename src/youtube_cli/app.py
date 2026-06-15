@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import curses
+import os
 import signal
 import subprocess
 import time
 import sys
+from collections.abc import Iterator
 
 from .models import MixCandidate, PlaybackResult, RecommendedSong, Track
 from .playback import pause_process, resume_process, stop_process
@@ -33,7 +36,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=0,
         help="stop after this many songs; 0 means play indefinitely",
     )
-    parser.add_argument("--verbose", action="store_true", help="show yt-dlp output")
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="write diagnostics to /tmp/youtube-cli.log in the terminal UI",
+    )
     return parser
 
 
@@ -54,7 +61,25 @@ def main(argv: list[str] | None = None) -> int:
     if not sys.stdin.isatty() or not sys.stdout.isatty():
         return run_plain(args, client, current)
 
-    return curses.wrapper(run_tui, args, client, current)
+    with redirected_tui_stderr(args.verbose):
+        return curses.wrapper(run_tui, args, client, current)
+
+
+@contextlib.contextmanager
+def redirected_tui_stderr(verbose: bool) -> Iterator[None]:
+    path = os.environ.get("YOUTUBE_CLI_LOG", "/tmp/youtube-cli.log" if verbose else os.devnull)
+    with open(path, "a" if verbose else "w", buffering=1) as target:
+        old_stderr = sys.stderr
+        old_fd = os.dup(2)
+        try:
+            sys.stderr = target
+            os.dup2(target.fileno(), 2)
+            yield
+        finally:
+            target.flush()
+            os.dup2(old_fd, 2)
+            os.close(old_fd)
+            sys.stderr = old_stderr
 
 
 def run_plain(args: argparse.Namespace, client: YoutubeMixClient, current: Track) -> int:

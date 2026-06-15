@@ -37,7 +37,6 @@ Useful options:
 ```sh
 youtube-cli --player mpv  # use specific player
 youtube-cli --max-songs 25  # stop playing after the number of songs is reached
-youtube-cli --verbose 
 ```
 
 To get better recommendations in the queue, set up a Last.fm API key: (they're completely free and can be picked up [here](https://www.last.fm/api))
@@ -62,12 +61,11 @@ MusicBrainz enrichment reorders the front of the Last.fm candidate list toward
 recordings with nearby release years and overlapping tags. It is off by default
 because MusicBrainz is rate-limited and can slow background queue fills.
 
-# Usage
+# Experience
 
 Playback starts as soon as the first song is resolved. The mix queue is filled
 in the background while the current song is playing. By default playback
 continues indefinitely until you stop it.
-When using `ffplay`, media is streamed through `yt-dlp`, which results in much more robust playback.
 
 The default interactive view is a terminal UI with the upcoming queue and a
 bottom now-playing progress bar. If stdout or stdin is not attached to a
@@ -84,7 +82,7 @@ Search rows show `...` while resolving, `+` after adding, `=` for duplicates, an
 If the queue is full, manual adds replace the last queued item.
 
 
-# While a song is playing:
+# Controls
 
 - Press `/` to search for another song.
   - Type a search term and press `enter` to show results.
@@ -99,3 +97,4 @@ If the queue is full, manual adds replace the last queued item.
 - Press `space` to pause or resume playback.
 - Press `s` to skip the current song.
 - Press `q` to quit.
+
