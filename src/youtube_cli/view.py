@@ -86,11 +86,11 @@ class TerminalUI:
 
         self._add_line(0, 0, "youtube-cli", curses.A_BOLD)
         if search_active:
-            controls = "enter/a add  n next  j now  up/dn select  esc close"
+            controls = "(enter/a)add  (n)next  (j)now  (up/dn)select  (esc)close"
         else:
-            controls = "enter jump  del remove  space pause  s skip  q quit"
+            controls = "(enter)jump  (del)remove  (space)pause  (s)skip  (q)quit"
             if width >= 92:
-                controls = "up/dn select  enter jump  del remove  space pause  s skip  q quit"
+                controls = "(up/dn)select  (enter)jump  (del)remove  (space)pause  (s)skip  (q)quit"
         self._add_line(0, max(12, width - len(controls)), controls, curses.A_DIM)
         self._hline(1, width)
 
