@@ -217,6 +217,16 @@ def play_with_ui(
                     pause_started_at = time.monotonic()
                     paused = True
                     local_status = "paused"
+            if action == "restart":
+                if paused:
+                    resume_process(process)
+                stop_process(process)
+                process = client.start_player(current)
+                started_at = time.monotonic()
+                paused = False
+                pause_started_at = 0.0
+                paused_seconds = 0.0
+                local_status = "restarted"
             if action in {"up", "down", "delete", "jump"}:
                 queue_action = handle_queue_action(action, ui, prefetcher)
                 if isinstance(queue_action, Track):

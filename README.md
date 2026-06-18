@@ -94,7 +94,7 @@ If the queue is full, manual adds replace the last queued item.
 - Press the up/down arrows to select an item in the queue.
 - Press `enter` to immediately play the selected queue item.
 - Press `delete` or `backspace` to remove the selected queue item.
+- Press the left arrow to restart the current song.
 - Press `space` to pause or resume playback.
-- Press `s` to skip the current song.
+- Press `s` or right arrow to skip the current song.
 - Press `q` to quit.
-

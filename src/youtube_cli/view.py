@@ -34,6 +34,8 @@ class TerminalUI:
             return "quit"
         if key in (ord("s"), ord("S"), curses.KEY_RIGHT):
             return "skip"
+        if key == curses.KEY_LEFT:
+            return "restart"
         if key == ord(" "):
             return "pause"
         if key in (curses.KEY_ENTER, 10, 13):
@@ -88,9 +90,9 @@ class TerminalUI:
         if search_active:
             controls = "(enter/a)add  (n)next  (j)now  (up/dn)select  (esc)close"
         else:
-            controls = "(enter)jump  (del)remove  (space)pause  (s)skip  (q)quit"
+            controls = "(left)restart  (space)pause  (s)skip  (q)quit"
             if width >= 92:
-                controls = "(up/dn)select  (enter)jump  (del)remove  (space)pause  (s)skip  (q)quit"
+                controls = "(up/dn)select  (enter)jump  (del)remove  (left)restart  (space)pause  (s)skip  (q)quit"
         self._add_line(0, max(12, width - len(controls)), controls, curses.A_DIM)
         self._hline(1, width)
 
