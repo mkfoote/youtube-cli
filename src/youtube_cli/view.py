@@ -32,17 +32,17 @@ class TerminalUI:
             return None
         if key in (ord("q"), ord("Q")):
             return "quit"
-        if key in (ord("s"), ord("S"), curses.KEY_RIGHT):
+        if key in (ord("s"), ord("S"), ord("l"), ord("L"), curses.KEY_RIGHT):
             return "skip"
-        if key == curses.KEY_LEFT:
+        if key == (ord("h"), ord("H"), curses.KEY_LEFT):
             return "restart"
         if key == ord(" "):
             return "pause"
         if key in (curses.KEY_ENTER, 10, 13):
             return "jump"
-        if key == curses.KEY_UP:
+        if key == (ord("k"), ord("K"), curses.KEY_UP):
             return "up"
-        if key == curses.KEY_DOWN:
+        if key == (ord("j"), ord("J"), curses.KEY_DOWN):
             return "down"
         if key in (curses.KEY_DC, 127, 8):
             return "delete"
@@ -88,11 +88,11 @@ class TerminalUI:
 
         self._add_line(0, 0, "youtube-cli", curses.A_BOLD)
         if search_active:
-            controls = "(enter/a)add  (n)next  (j)now  (up/dn)select  (esc)close"
+            controls = "👍vi  (enter/a)add  (n)next  (j)now  (up/dn)select  (esc)close"
         else:
-            controls = "(left)restart  (space)pause  (s)skip  (q)quit"
+            controls = "👍vi  (left)restart  (space)pause  (s)skip  (q)quit"
             if width >= 92:
-                controls = "(up/dn)select  (enter)jump  (del)remove  (left)restart  (space)pause  (s)skip  (q)quit"
+                controls = "👍vi  (up/dn)select  (enter)jump  (del)remove  (left)restart  (space)pause  (s)skip  (q)quit"
         self._add_line(0, max(12, width - len(controls)), controls, curses.A_DIM)
         self._hline(1, width)
 
