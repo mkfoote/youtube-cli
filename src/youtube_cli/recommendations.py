@@ -9,6 +9,7 @@ from typing import Any, Callable, Iterable
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from .config import lastfm_api_key
 from .models import MusicMetadata, RecommendationProvider, RecommendedSong, Track
 from .text import infer_artist_from_title, normalize_song_text, normalize_title_key
 
@@ -301,11 +302,14 @@ def build_recommendation_providers(*, verbose: bool) -> list[RecommendationProvi
         if item.strip()
     }
     providers: list[RecommendationProvider] = []
-    api_key = os.environ.get("LASTFM_API_KEY", "").strip()
+    api_key = lastfm_api_key()
     if "lastfm" in enabled and api_key:
         providers.append(LastFmRecommendationProvider(api_key, verbose=verbose))
     elif verbose and "lastfm" in enabled:
-        print("Last.fm recommender disabled: LASTFM_API_KEY is not set.", file=sys.stderr)
+        print(
+            "Last.fm recommender disabled: run 'youtube-cli config' or set LASTFM_API_KEY.",
+            file=sys.stderr,
+        )
     return providers
 
 

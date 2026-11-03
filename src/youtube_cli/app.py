@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import curses
+import getpass
 import os
 import signal
 import subprocess
@@ -10,6 +11,12 @@ import time
 import sys
 from collections.abc import Iterator
 
+from .config import (
+    clear_lastfm_api_key,
+    config_path,
+    lastfm_api_key_source,
+    save_lastfm_api_key,
+)
 from .models import MixCandidate, PlaybackResult, RecommendedSong, Track
 from .playback import pause_process, resume_process, stop_process
 from .prefetch import MixPrefetcher
@@ -44,8 +51,27 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_config_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="youtube-cli config",
+        description="Store or inspect youtube-cli user configuration.",
+    )
+    parser.add_argument(
+        "action",
+        nargs="?",
+        choices=("set", "show", "clear"),
+        default="set",
+        help="set (default), show, or clear the saved Last.fm API key",
+    )
+    return parser
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    raw_args = list(sys.argv[1:] if argv is None else argv)
+    if raw_args and raw_args[0] == "config":
+        return run_config_command(raw_args[1:])
+
+    args = build_parser().parse_args(raw_args)
     query = " ".join(args.song).strip() or input("Song: ").strip()
     if not query:
         print("No song entered.", file=sys.stderr)
@@ -63,6 +89,36 @@ def main(argv: list[str] | None = None) -> int:
 
     with redirected_tui_stderr(args.verbose):
         return curses.wrapper(run_tui, args, client, current)
+
+
+def run_config_command(argv: list[str]) -> int:
+    args = build_config_parser().parse_args(argv)
+    path = config_path()
+    if args.action == "show":
+        source = lastfm_api_key_source()
+        status = f"configured via {source}" if source else "not configured"
+        print(f"Configuration file: {path}")
+        print(f"Last.fm API key: {status}")
+        return 0
+
+    if args.action == "clear":
+        if clear_lastfm_api_key(path):
+            print(f"Removed the saved Last.fm API key from {path}")
+        else:
+            print(f"No saved Last.fm API key was found in {path}")
+        if os.environ.get("LASTFM_API_KEY", "").strip():
+            print("LASTFM_API_KEY is still set in the environment and takes precedence.")
+        return 0
+
+    api_key = getpass.getpass("Last.fm API key (input hidden): ").strip()
+    if not api_key:
+        print("No API key entered; configuration was not changed.", file=sys.stderr)
+        return 2
+    destination = save_lastfm_api_key(api_key, path)
+    print(f"Saved the Last.fm API key to {destination}")
+    if os.environ.get("LASTFM_API_KEY", "").strip():
+        print("LASTFM_API_KEY is currently set in the environment and takes precedence.")
+    return 0
 
 
 @contextlib.contextmanager

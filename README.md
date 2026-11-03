@@ -12,7 +12,33 @@ prefetching related tracks in the background in a YouTube mix style.
   - `ffplay` from FFmpeg, or
   - `mpv`
 
-## Install
+## Install for everyday use
+
+Run the installer from this repository:
+
+```sh
+./install.sh
+```
+
+This creates an isolated environment under `~/.local/share/youtube-cli` and a
+`youtube-cli` command under `~/.local/bin`. You do not need to activate a
+virtual environment. If the installer says `~/.local/bin` is not on `PATH`, add
+the line it prints to your shell profile and open a new terminal.
+
+Run the same command again whenever you want to update the installed copy from
+this checkout.
+
+You can customize the locations with `YOUTUBE_CLI_INSTALL_DIR` and
+`YOUTUBE_CLI_BIN_DIR`, or select a Python interpreter with `PYTHON`.
+
+Alternatively, if you already use
+[`pipx`](https://pipx.pypa.io/stable/), install the package with:
+
+```sh
+pipx install .
+```
+
+For development, use an editable virtual-environment install:
 
 ```sh
 python3 -m venv .venv
@@ -39,17 +65,29 @@ youtube-cli --player mpv  # use specific player
 youtube-cli --max-songs 25  # stop playing after the number of songs is reached
 ```
 
-To get better recommendations in the queue, set up a Last.fm API key: (they're completely free and can be picked up [here](https://www.last.fm/api))
+To get better recommendations in the queue, get a free
+[Last.fm API key](https://www.last.fm/api), then save it once:
 
 ```sh
-export LASTFM_API_KEY="..."
-youtube-cli "damn yankees high enough"
+youtube-cli config
 ```
 
-With `LASTFM_API_KEY` set, the queue asks Last.fm for similar tracks and top
-tracks from similar artists, then resolves those songs through YouTube for
-playback. If Last.fm is unavailable or returns nothing playable, the app falls
-back to the built-in YouTube related/search queue.
+The prompt hides the key while you type it. It is stored in
+`~/.config/youtube-cli/config.ini` with user-only permissions. If
+`XDG_CONFIG_HOME` is set, that directory is used instead. To inspect the status
+without displaying the key, or remove the saved key, run:
+
+```sh
+youtube-cli config show
+youtube-cli config clear
+```
+
+`LASTFM_API_KEY` is still supported and takes precedence over the saved value,
+which is useful for temporary overrides. With a key configured, the queue asks
+Last.fm for similar tracks and top tracks from similar artists, then resolves
+those songs through YouTube for playback. If Last.fm is unavailable or returns
+nothing playable, the app falls back to the built-in YouTube related/search
+queue.
 
 Optional MusicBrainz era/tag enrichment can be enabled with:
 
@@ -84,13 +122,7 @@ If the queue is full, manual adds replace the last queued item.
 
 # Controls
 
-- Press `/` to search for another song.
-  - Type a search term and press `enter` to show results.
-  - Use up/down arrows in search results.
-  - Press `enter` or `a` to add the highlighted result to the end of the queue.
-  - Press `n` to add the highlighted result as the next song.
-  - Press `j` to resolve and play the highlighted result immediately.
-  - Press `esc` to close search and return to queue control.
+- Vi keys (h/j/k/l) work in the same manner as the corresponding arrow keys
 - Press the up/down arrows to select an item in the queue.
 - Press `enter` to immediately play the selected queue item.
 - Press `delete` or `backspace` to remove the selected queue item.
@@ -98,3 +130,11 @@ If the queue is full, manual adds replace the last queued item.
 - Press `space` to pause or resume playback.
 - Press `s` or right arrow to skip the current song.
 - Press `q` to quit.
+- Press `/` to search for another song.
+  - Type a search term and press `enter` to show results.
+  - Use up/down arrows in search results.
+  - Press `enter` or `a` to add the highlighted result to the end of the queue.
+  - Press `n` to add the highlighted result as the next song.
+  - Press `j` to resolve and play the highlighted result immediately.
+  - Press `esc` to close search and return to queue control.
+
