@@ -1,8 +1,10 @@
-# youtube-cli
+# <div align="center">youtube-cli</center>
 
 A terminal-only YouTube music client. It prompts for a song, uses `yt-dlp` to
 resolve a playable audio stream, plays it with a CLI media player, then keeps
 prefetching related tracks in the background in a YouTube mix style.
+
+![Screenshot](./images/screenshot.png)
 
 ## Requirements
 
